@@ -8,7 +8,7 @@ To do:
   - Add support for larger polynomaisl
   - Make sure everything works correctly
   - Add support for calculus
-  -- Add support for slopes
-  -- Add support for differentiation
-  -- Add support for integration
+    - Add support for slopes
+    - Add support for differentiation
+    - Add support for integration
  
