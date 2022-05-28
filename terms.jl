@@ -1,5 +1,5 @@
 #!/home/knight/Applications/julia-1.7.2/bin/julia
-module Polynomials
+#module Polynomials
 import Base: ^, *
 
 export Term, eval, repr, *, ^
@@ -81,21 +81,22 @@ test(code, exp) = begin
 end
 
 run_tests() = begin
-    test(:(repr(Term(3, "x"=>2, "z"=>4, 'y'=>3))), "3y^3x^2z^4")
+    """test(:(repr(Term(3, "x"=>2, "z"=>4, 'y'=>3))), "3y^3x^2z^4")
     test(
     :(eval(Term(1, 'y'=>1, 'x'=>5), 'x'=>2, 'y'=>5)), 160
     )
     test(
     :(repr(eval(Term(4, "Pop"=>3, 'p'=>5), "Pop"=>7))), "1372p^5"
-    )
+    )"""
     
-    x = Term(5, 'a'=>2, "peep"=>4)
-    y = Term(2, 'a'=>3, "lol" =>3)
-    println(x*y)
-    println(x^3)
-    println(repr(x), '\n', repr(y))
+    @time x = Term(5, 'a'=>2, "peep"=>4)
+    @time y = Term(2, 'a'=>3, "lol" =>3)
+    println("---  The function zone ---")
+    @time println(x*y)
+    @time println(x^3)
+    @time println(repr(x), '\n', repr(y))
 end
 
-#run_tests()
+run_tests()
 
-end
+#end
