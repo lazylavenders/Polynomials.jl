@@ -3,20 +3,23 @@
 import Base: ^, *, print, println
 
 include("settings.jl")
+include("utils.jl")
 
-export Term, eval, repr, *, ^
+export Term, eval, show, *, ^, degree, isnumber, isnegative
 
 mutable struct Term{T<:Number}
+    """It can just be a number too like x::Term = Term(9)"""
     coeff::T
     vars::Dict # They are in the form "x" => 9 ...
 
-    Term(x::Union{String, Char}) = new{Number}(1, x=>1)
-    Term(x::Number, y...)        = new{Number}(x, Dict(y))
-    Term(x::Number)              = new{Number}(x, Dict())
-    Term(x::Rational)            = new{Rational}(x, Dict())
-    Term(x::Rational, y...)      = new{Rational}(x, Dict(y))
-    #Term{Some_Type}(x)           = new{Some_Type}(x)
-    #Term{ST}(x, y...)            = new{ST}(x, Dict(y))
+    Term(x::Union{String, Char})                  = new{Number}(1, x=>1)
+    Term(x::Number, y...)                         = new{Number}(x, Dict(y))
+    Term(x::Number)                               = new{Number}(x, Dict())
+    Term(x::Rational)                             = new{Rational}(x, Dict())
+    Term(x::Rational, y...)                       = new{Rational}(x, Dict(y))
+    Term{Some_Type}(x) where Some_Type <: Number  = new{Some_Type}(x::Some_Type,
+                                                        Dict())
+    Term{ST}(x, y...)  where ST <: Number         = new{ST}(x::ST, Dict(y))
 end
 
 *(x::Term, y::Term)::Term = begin
@@ -47,7 +50,7 @@ end
     Term(coeff, vars...)
 end
 
-repr(x :: Term) = begin
+show(x :: Term) = begin
     if x.coeff == 0    return ""; end
 
     res = ""
@@ -63,7 +66,7 @@ repr(x :: Term) = begin
     return res
 end
 
-degree(trm::Term) = begin
+degree(trm::Term)::Number = begin
     #We currently don't check for negative powers
     res = 0
     
@@ -78,8 +81,9 @@ eval(t::Term, vals...) = begin
     rem_trms::Vector = Vector()
     res::Number = t.coeff
 
+    # println(t.vars)
     for (var, pow) = t.vars
-        #println("$var \t $pow\t $(var in keys(vals))")
+        # println("$var \t $pow\t $(var in keys(vals))")
         if var in keys(vals)
             res *= vals[var] ^ pow
         
@@ -93,6 +97,8 @@ eval(t::Term, vals...) = begin
     if isempty(rem_trms)  return res; end
     return Term(res, rem_trms...)
 end
+
+isnumber(term::Term)::Bool = term.vars == Dict()
 
 test(code, exp...) = begin
     x = eval(code)
@@ -111,31 +117,33 @@ is_negative(x::Term) = begin
 end
 
 run_tests() = begin
-    @time repr(Term(3, "x"=>2, "z"=>4, 'y'=>3))
-    @time @assert eval(Term(1, 'y'=>1, 'x'=>5), 'x'=>2, 'y'=>5) == 160
-    @time print(repr(eval(Term(4, "Pop"=>3, 'p'=>5), "Pop"=>7))) == "1372p^5"
+    @benchmark show(Term(3, "x"=>2, "z"=>4, 'y'=>3))
+    @benchmark @assert eval(Term(1, 'y'=>1, 'x'=>5), 'x'=>2, 'y'=>5) == 160
+    @benchmark show(eval(Term(4, "Pop"=>3, 'p'=>5), "Pop"=>7)) == "1372p^5"
     
     println()
     
-    @time x = Term(5, 'a'=>2, "peep"=>4)
-    @time y = Term(2, 'a'=>3, "lol" =>3)
-    @time z = Term(13524, 'p'=>789, 'o'=>7, 'n'=>45, 'k'=>354, 'v'=>4545)
+    @benchmark x = Term(5, 'a'=>2, "peep"=>4)
+    @benchmark y = Term(2, 'a'=>3, "lol" =>3)
+    @benchmark z = Term(13524, 'p'=>789, 'o'=>7, 'n'=>45, 'k'=>354, 'v'=>4545)
     println("---  The function zone ---")
     
     (x*y)^5
     
-    @time (x*y)
-    @time (x^3)
-    @time (repr(x); '\n'; repr(y))
-    @time @assert 789+7+45+354+4545 == degree(z)
-    @time sort([x, y, z], by=degree)
+    @benchmark (x*y)
+    @benchmark (x^3)
+    @benchmark (show(x); '\n'; repr(y))
+    @benchmark @assert 789+7+45+354+4545 == degree(z)
+    @benchmark sort([x, y, z], by=degree)
+    #@benchmark Term{Rational}(9//4).vars
+    @benchmark isnumber(Term{Rational}(4//3))
     println()
 end
 
 if DEBUG.terms
     #println("Final test")
     run_tests()
-    print("POIPOIOIPOIP\n")
+    print("TERMS.JL TESTS DONE\n")
 
     @time run_tests()
 end
