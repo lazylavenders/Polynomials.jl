@@ -99,6 +99,7 @@ eval(t::Term, vals...) = begin
 end
 
 isnumber(term::Term)::Bool = term.vars == Dict()
+isnumber(num::Number)::Bool = true
 
 test(code, exp...) = begin
     x = eval(code)

@@ -1,8 +1,9 @@
 #!/home/knight/Applications/julia-1.7.2/bin/julia
 
+
 include("terms.jl")
 
-import Base: repr
+import Base: repr, show
 
 mutable struct Polynomial
     terms :: Vector{Term}
@@ -26,7 +27,7 @@ function show(poly::Polynomial)::String
     res = ""
     for (i, term) in enumerate(poly.terms)
         if is_negative(term)
-            res *= show(term)
+            res *= " - "*show(term)
             continue
         end
         
@@ -36,10 +37,12 @@ function show(poly::Polynomial)::String
             res *= " + " * show(term)
         end
     end
-    return res
+    return res::String
 end
 
+function differentiate(poly::Polynomial)
 
+end
 
 function variables(poly::Polynomial)
     vars::Array = []
@@ -59,14 +62,13 @@ function eval(poly::Polynomial, vals...)
     res::Vector{Term} = []
     C::Number = 0
 
-    @show poly.terms[5]
+    #@show poly.terms[5]
     for i in poly.terms
-        @show i
         val = eval(i, vals...)
         if isnumber(val)
-            C += vals
+            C += val
         else
-            res = vcat(res, val...)
+            res = vcat(res, val)
         end
     end
 
@@ -77,15 +79,17 @@ function eval(poly::Polynomial, vals...)
 end
 
 function run_tests()
-    p = polynomial_from_coeffs(2,3,4,5,66, 0, 2,3,4,5,6,7, 90; var='x')
+    p = polynomial_from_coeffs(2,3,4,5,66; var='x')
     
     t = Polynomial(Term(3, 'o'=>6, 'p'=>5), Term(2, 'k'=>3))
-    "
-        @benchmark variables(t)
+    
+    @benchmark variables(t)
         
-        @benchmark println(show(polynomial_from_coeffs(3,4,5,6,1, 0, 7)))
-        @benchmark polynomial_from_coeffs(pi, 3, 2.718281828459045, 5, 7, 66/5) |> show |> println"
-    @benchmark eval(p, "x"=>6)
+    @benchmark println(show(polynomial_from_coeffs(3,4,5,6,1, 0, 7)))
+    @benchmark polynomial_from_coeffs(pi, 3, 2.718281828459045, 5, 7, 66/5) |> show |> println
+    println(show(p::Polynomial))
+    println(eval(p, 'x'=>6))
+    
 end
 
 if DEBUG.poly
@@ -93,4 +97,4 @@ if DEBUG.poly
 end
 
 # TO DO
-# Add eval
+# Add differentiation
